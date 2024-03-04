@@ -6,14 +6,13 @@ import (
 	"github.com/alexflint/go-arg"
 	"github.com/go-redis/redis/v9"
 	"os"
-	"strings"
 )
 
 var args struct {
-	ClusterServer string `help:"Cluster Server Host" default:"localhost" arg:"--server, -s, env:CLUSTER_SERVER"`
-	ClusterPort   string `help:"Cluster Server Port" default:"6379" arg:"--port, -p, env:CLUSTER_PORT"`
-	Verbose       bool   `help:"Verbose" arg:"--verbose, -v"`
-	Command       string `help:"Command" arg:"positional" required:"true"`
+	ClusterServer string   `help:"Cluster Server Host" default:"localhost" arg:"--server, -s, env:CLUSTER_SERVER"`
+	ClusterPort   string   `help:"Cluster Server Port" default:"6379" arg:"--port, -p, env:CLUSTER_PORT"`
+	Verbose       bool     `help:"Verbose" arg:"--verbose, -v"`
+	Command       []string `help:"Command" arg:"positional" required:"true"`
 }
 
 func getMasterNodes(conf *redis.ClusterOptions) ([]string, error) {
@@ -44,9 +43,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "# %s\n", n)
 		}
 		rdb := redis.NewClient(&redis.Options{Addr: n})
-		c := strings.Split(args.Command, " ")
-		cmd := make([]interface{}, len(c))
-		for i, v := range c {
+		cmd := make([]interface{}, len(args.Command))
+		for i, v := range args.Command {
 			cmd[i] = v
 		}
 		res, err := rdb.Do(context.Background(), cmd...).Result()
