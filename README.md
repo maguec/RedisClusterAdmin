@@ -45,6 +45,8 @@ db0:keys=334,expires=0,avg_ttl=0
 ```
 ### Find all matching keys across a cluster
 
+*WARNING* Running this against production may have severe performance implications - be careful
+
 ```sh
 ./rcadmin -s localhost -p 30001  -v KEYS "MYKEY5*"
 # 127.0.0.1:30001
