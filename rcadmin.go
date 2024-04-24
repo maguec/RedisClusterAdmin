@@ -6,6 +6,7 @@ import (
 	"github.com/alexflint/go-arg"
 	"github.com/go-redis/redis/v9"
 	"os"
+	"strings"
 )
 
 var args struct {
@@ -29,6 +30,27 @@ func getMasterNodes(conf *redis.ClusterOptions) ([]string, error) {
 	return nodes, nil
 }
 
+func prettyprintSlots(conf *redis.ClusterOptions, nodes []string) string {
+	var res strings.Builder
+	client := redis.NewClient(&redis.Options{Addr: nodes[0]})
+	slots, err := client.ClusterSlots(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
+	for _, slot := range slots {
+		res.WriteString(
+			fmt.Sprintf(
+				"Slot: %5d - %5d Primary: %+v Secondaries: ",
+				slot.Start, slot.End, slot.Nodes[0].Addr))
+		for _, n := range slot.Nodes[1:] {
+			res.WriteString(fmt.Sprintf("%+v ", n.Addr))
+		}
+		res.WriteString("\n")
+	}
+
+	return res.String()
+}
+
 func main() {
 	arg.MustParse(&args)
 	conf := &redis.ClusterOptions{
@@ -38,20 +60,36 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	cmd := make([]interface{}, len(args.Command))
+	for i, v := range args.Command {
+		cmd[i] = v
+	}
+
+	// if the command is cluster slots intercept it and return an prettier output
+	if strings.ToLower(cmd[0].(string)) == "cluster" && strings.ToLower(cmd[1].(string)) == "slots" {
+		fmt.Println(prettyprintSlots(conf, nodes))
+		return
+	}
+
 	for _, n := range nodes {
 		if args.Verbose {
 			fmt.Fprintf(os.Stderr, "# %s\n", n)
 		}
 		rdb := redis.NewClient(&redis.Options{Addr: n})
-		cmd := make([]interface{}, len(args.Command))
-		for i, v := range args.Command {
-			cmd[i] = v
-		}
 		res, err := rdb.Do(context.Background(), cmd...).Result()
 		if err != nil {
 			panic(err)
 		}
-		fmt.Fprintln(os.Stdout, res)
+		if _, ok := res.(string); ok {
+			fmt.Fprintf(os.Stdout, "%s\n", res)
+		} else if _, ok := res.([]interface{}); ok {
+			for _, v := range res.([]interface{}) {
+				fmt.Fprintf(os.Stdout, "%+v\n", v)
+			}
+		} else {
+			fmt.Fprintf(os.Stdout, "%+v\n", res)
+		}
 	}
 
 }
