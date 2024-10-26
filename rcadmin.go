@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/alexflint/go-arg"
 	"github.com/go-redis/redis/v9"
+  "github.com/mpvl/unique"
 	"os"
 	"strings"
 )
@@ -27,6 +28,7 @@ func getMasterNodes(conf *redis.ClusterOptions) ([]string, error) {
 	for _, s := range slots {
 		nodes = append(nodes, s.Nodes[0].Addr)
 	}
+  unique.Strings(&nodes)
 	return nodes, nil
 }
 
