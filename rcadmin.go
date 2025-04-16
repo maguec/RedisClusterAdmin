@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/alexflint/go-arg"
 	"github.com/go-redis/redis/v9"
-	"github.com/mpvl/unique"
+	"github.com/maguec/RedisClusterAdmin/commands"
 	"os"
 	"strings"
 )
@@ -18,48 +18,12 @@ var args struct {
 	Command       []string `help:"Command" arg:"positional" required:"true"`
 }
 
-func getMasterNodes(conf *redis.ClusterOptions) ([]string, error) {
-	var ctx = context.Background()
-	nodes := []string{}
-	client := redis.NewClusterClient(conf)
-	slots, err := client.ClusterSlots(ctx).Result()
-	if err != nil {
-		return nil, err
-	}
-	for _, s := range slots {
-		nodes = append(nodes, s.Nodes[0].Addr)
-	}
-	unique.Strings(&nodes)
-	return nodes, nil
-}
-
-func prettyprintSlots(conf *redis.ClusterOptions, nodes []string) string {
-	var res strings.Builder
-	client := redis.NewClient(&redis.Options{Addr: nodes[0]})
-	slots, err := client.ClusterSlots(context.Background()).Result()
-	if err != nil {
-		panic(err)
-	}
-	for _, slot := range slots {
-		res.WriteString(
-			fmt.Sprintf(
-				"Slot: %5d - %5d Primary: %+v Secondaries: ",
-				slot.Start, slot.End, slot.Nodes[0].Addr))
-		for _, n := range slot.Nodes[1:] {
-			res.WriteString(fmt.Sprintf("%+v ", n.Addr))
-		}
-		res.WriteString("\n")
-	}
-
-	return res.String()
-}
-
 func main() {
 	arg.MustParse(&args)
 	conf := &redis.ClusterOptions{
 		Addrs: []string{fmt.Sprintf("%s:%s", args.ClusterServer, args.ClusterPort)},
 	}
-	nodes, err := getMasterNodes(conf)
+	nodes, err := commands.GetMasterNodes(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -71,14 +35,14 @@ func main() {
 
 	// if the command is cluster slots intercept it and return an prettier output
 	if strings.ToLower(cmd[0].(string)) == "cluster" && strings.ToLower(cmd[1].(string)) == "slots" {
-		fmt.Println(prettyprintSlots(conf, nodes))
+		fmt.Println(commands.PrettyPrintSlots(conf, nodes))
 		return
 	}
 
-  if strings.ToLower(cmd[0].(string)) == "info" && args.Keyspace {
-    fmt.Println("Parse the Keyspace")
-    return
-  }
+	if strings.ToLower(cmd[0].(string)) == "info" && args.Keyspace {
+		fmt.Println("Parse the Keyspace")
+		return
+	}
 
 	for _, n := range nodes {
 		if args.Verbose {
