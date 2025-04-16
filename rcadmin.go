@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/alexflint/go-arg"
 	"github.com/go-redis/redis/v9"
-  "github.com/mpvl/unique"
+	"github.com/mpvl/unique"
 	"os"
 	"strings"
 )
@@ -14,6 +14,7 @@ var args struct {
 	ClusterServer string   `help:"Cluster Server Host" default:"localhost" arg:"--server, -s, env:CLUSTER_SERVER"`
 	ClusterPort   string   `help:"Cluster Server Port" default:"6379" arg:"--port, -p, env:CLUSTER_PORT"`
 	Verbose       bool     `help:"Verbose" arg:"--verbose, -v"`
+	Keyspace      bool     `help:"Verbose" arg:"--keyspace, -k"`
 	Command       []string `help:"Command" arg:"positional" required:"true"`
 }
 
@@ -28,7 +29,7 @@ func getMasterNodes(conf *redis.ClusterOptions) ([]string, error) {
 	for _, s := range slots {
 		nodes = append(nodes, s.Nodes[0].Addr)
 	}
-  unique.Strings(&nodes)
+	unique.Strings(&nodes)
 	return nodes, nil
 }
 
@@ -73,6 +74,11 @@ func main() {
 		fmt.Println(prettyprintSlots(conf, nodes))
 		return
 	}
+
+  if strings.ToLower(cmd[0].(string)) == "info" && args.Keyspace {
+    fmt.Println("Parse the Keyspace")
+    return
+  }
 
 	for _, n := range nodes {
 		if args.Verbose {
