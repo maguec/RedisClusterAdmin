@@ -15,6 +15,7 @@ var args struct {
 	ClusterPort   string   `help:"Cluster Server Port" default:"6379" arg:"--port, -p, env:CLUSTER_PORT"`
 	Verbose       bool     `help:"Verbose" arg:"--verbose, -v"`
 	Keyspace      bool     `help:"Verbose" arg:"--keyspace, -k"`
+	Summit        bool     `help:"Sum the counts" arg:"--sum, -m"`
 	Command       []string `help:"Command" arg:"positional" required:"true"`
 }
 
@@ -40,7 +41,10 @@ func main() {
 	}
 
 	if strings.ToLower(cmd[0].(string)) == "info" && args.Keyspace {
-		fmt.Println("Parse the Keyspace")
+		err := commands.PrintKeyspace(conf, nodes, args.Summit)
+		if err != nil {
+			panic(err)
+		}
 		return
 	}
 
