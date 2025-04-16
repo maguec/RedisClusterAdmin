@@ -11,14 +11,14 @@ make
 ## Usage
 
 ```sh
-./rcadmin -s <host> -p <port> -v INFO KEYSPACE
+./rcadmin -s <host> -p <port> -v INFO CPU
 ```
 
 ## Options
 
 ```sh
-./rcadmin -h
-Usage: rcadmin [--server SERVER] [--port PORT] [--verbose] [COMMAND [COMMAND ...]]
+./rcadmin  -h
+Usage: rcadmin [--server SERVER] [--port PORT] [--verbose] [--keyspace] [--sum] [COMMAND [COMMAND ...]]
 
 Positional arguments:
   COMMAND                Command
@@ -28,6 +28,8 @@ Options:
                          Cluster Server Host [default: localhost, env: CLUSTER_SERVER]
   --port PORT, -p PORT   Cluster Server Port [default: 6379, env: CLUSTER_PORT]
   --verbose, -v          Verbose
+  --keyspace, -k         Get the cluster Keyspace stats
+  --sum, -m              Sum the stat returned
   --help, -h             display this help and exit
 ```
 
@@ -35,14 +37,29 @@ The verbose option will include the shard information as a comment line before t
 
 ## Examples
 
+### Get an Info on all shards 
+
+```sh
+./rcadmin -p 30001 INFO  |grep uptime_in_seconds
+uptime_in_seconds:22772
+uptime_in_seconds:22772
+uptime_in_seconds:22772
+```
 ### Get Keyspace on all shards 
 
 ```sh
-./rcadmin -s localhost -p 30001  INFO KEYSPACE | egrep "^db0:"
-db0:keys=331,expires=0,avg_ttl=0
-db0:keys=335,expires=0,avg_ttl=0
-db0:keys=334,expires=0,avg_ttl=0
+# Sum the all
+./rcadmin -p 30001 --keyspace  --sum INFO
+1000
+
+# Get per shard
+./rcadmin -p 30001 --keyspace   INFO
+339
+329
+332
 ```
+
+
 ### Find all matching keys across a cluster
 
 *WARNING* Running this against production may have severe performance implications - be careful

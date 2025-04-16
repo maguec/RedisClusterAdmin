@@ -14,8 +14,8 @@ var args struct {
 	ClusterServer string   `help:"Cluster Server Host" default:"localhost" arg:"--server, -s, env:CLUSTER_SERVER"`
 	ClusterPort   string   `help:"Cluster Server Port" default:"6379" arg:"--port, -p, env:CLUSTER_PORT"`
 	Verbose       bool     `help:"Verbose" arg:"--verbose, -v"`
-	Keyspace      bool     `help:"Verbose" arg:"--keyspace, -k"`
-	Summit        bool     `help:"Sum the counts" arg:"--sum, -m"`
+	Keyspace      bool     `help:"Get the cluster Keyspace stats" arg:"--keyspace, -k"`
+	Summit        bool     `help:"Sum the stat returned" arg:"--sum, -m"`
 	Command       []string `help:"Command" arg:"positional" required:"true"`
 }
 
