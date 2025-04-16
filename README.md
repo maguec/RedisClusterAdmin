@@ -11,14 +11,14 @@ make
 ## Usage
 
 ```sh
-./rcadmin -s <host> -p <port> -v INFO CPU
+./RedisClusterAdmin -s <host> -p <port> -v INFO CPU
 ```
 
 ## Options
 
 ```sh
-./rcadmin  -h
-Usage: rcadmin [--server SERVER] [--port PORT] [--verbose] [--keyspace] [--sum] [COMMAND [COMMAND ...]]
+./RedisClusterAdmin  -h
+Usage: RedisClusterAdmin [--server SERVER] [--port PORT] [--verbose] [--keyspace] [--sum] [COMMAND [COMMAND ...]]
 
 Positional arguments:
   COMMAND                Command
@@ -40,7 +40,7 @@ The verbose option will include the shard information as a comment line before t
 ### Get an Info on all shards 
 
 ```sh
-./rcadmin -p 30001 INFO  |grep uptime_in_seconds
+./RedisClusterAdmin -p 30001 INFO  |grep uptime_in_seconds
 uptime_in_seconds:22772
 uptime_in_seconds:22772
 uptime_in_seconds:22772
@@ -49,11 +49,11 @@ uptime_in_seconds:22772
 
 ```sh
 # Sum the all
-./rcadmin -p 30001 --keyspace  --sum INFO
+./RedisClusterAdmin -p 30001 --keyspace  --sum INFO
 1000
 
 # Get per shard
-./rcadmin -p 30001 --keyspace   INFO
+./RedisClusterAdmin -p 30001 --keyspace   INFO
 339
 329
 332
@@ -65,7 +65,7 @@ uptime_in_seconds:22772
 *WARNING* Running this against production may have severe performance implications - be careful
 
 ```sh
-./rcadmin -s localhost -p 30001  -v KEYS "MYKEY5*"
+./RedisClusterAdmin -s localhost -p 30001  -v KEYS "MYKEY5*"
 # 127.0.0.1:30001
 [MYKEY516 MYKEY523 MYKEY505 MYKEY538 MYKEY553 MYKEY527 MYKEY593 MYKEY545 MYKEY584 MYKEY562 MYKEY592 MYKEY530 MYKEY579 MYKEY580 MYKEY512 MYKEY552 MYKEY588 MYKEY53 MYKEY571 MYKEY556 MYKEY574 MYKEY597 MYKEY509 MYKEY581 MYKEY541 MYKEY578 MYKEY585 MYKEY575 MYKEY549 MYKEY534 MYKEY566 MYKEY567 MYKEY57 MYKEY570 MYKEY563 MYKEY596 MYKEY589 MYKEY501]
 # 127.0.0.1:30002

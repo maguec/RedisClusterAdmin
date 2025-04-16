@@ -4,11 +4,11 @@ deps:
 	go get
 
 mybuild:
-	go build rcadmin.go
+	go build -o RedisClusterAdmin rcadmin.go 
 
 xcompile:
 	goreleaser --snapshot --skip-publish --rm-dist
 
 clean:
-	rm -f rcadmin
+	rm -f RedisClusterAdmin
 	rm -rf dist/*
